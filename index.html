@@ -1076,10 +1076,16 @@ footer {
   .nav-search-btn { padding: 0 10px; margin-right: 4px; color: rgba(255,255,255,0.85); }
   .nav-search-btn svg { width: 16px; height: 10px; }
 
-  /* ---- SEARCH DROPDOWN: fills remaining screen, no bleed-through ---- */
+  /* ---- SEARCH DROPDOWN: fixed to viewport so no page bleed-through ---- */
+  .search-dropdown {
+    position: fixed;
+    top: var(--nav-bottom, 40px);
+    left: 0;
+    right: 0;
+  }
   .search-dropdown.open {
-    height: calc(100vh - 44px);
-    max-height: calc(100vh - 44px);
+    height: calc(100vh - var(--nav-bottom, 40px));
+    max-height: calc(100vh - var(--nav-bottom, 40px));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1303,11 +1309,11 @@ footer {
 
 <nav style="position:relative">
   <div class="nav-links">
-    <a href="#" class="active" onclick="filterPosts('all',this);return false;">All</a>
-    <a href="#" onclick="filterPosts('analysis',this);return false;">Analysis</a>
-    <a href="#" onclick="filterPosts('strike',this);return false;">Strikes</a>
-    <a href="#" onclick="filterPosts('conflict',this);return false;">Conflict</a>
-    <a href="#" onclick="filterPosts('geolocation',this);return false;"><span class="geo-full">Geolocation</span><span class="geo-short">Geo</span></a>
+    <a href="#" class="active" data-filter="all">All</a>
+    <a href="#" data-filter="analysis">Analysis</a>
+    <a href="#" data-filter="strike">Strikes</a>
+    <a href="#" data-filter="conflict">Conflict</a>
+    <a href="#" data-filter="geolocation"><span class="geo-full">Geolocation</span><span class="geo-short">Geo</span></a>
   </div>
   <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" style="display:none">
     <span class="nav-hamburger-icon" id="nav-hamburger-icon">☰</span>
@@ -2756,32 +2762,33 @@ function filterTag(tag, el) {
 function toggleSearchDropdown() {
   const dropdown = document.getElementById('search-dropdown');
   const btn = document.getElementById('search-toggle');
-  const isOpen = dropdown.classList.toggle('open');
-  btn.classList.toggle('active', isOpen);
-  if (isOpen) {
-    // only autofocus on non-touch devices to prevent mobile keyboard popup
+  // read state BEFORE toggling so button tap always inverts correctly
+  const wasOpen = dropdown.classList.contains('open');
+
+  if (wasOpen) {
+    closeSearchBar();
+    document.removeEventListener('mousedown', outsideSearchClose);
+    if (document._dispatchBodyLock) {
+      document.removeEventListener('touchmove', document._dispatchBodyLock);
+      document._dispatchBodyLock = null;
+    }
+  } else {
+    dropdown.classList.add('open');
+    btn.classList.add('active');
     if (!('ontouchstart' in window)) {
       setTimeout(() => document.getElementById('search-input').focus(), 320);
     }
-    // on mobile: prevent background body scroll by intercepting touchmove outside dropdown
+    // on mobile: block touchmove on the page behind the dropdown
     if (window.innerWidth <= 520) {
       document._dispatchBodyLock = function(e) {
         if (!dropdown.contains(e.target)) e.preventDefault();
       };
       document.addEventListener('touchmove', document._dispatchBodyLock, { passive: false });
     }
+    // delay so this tap event doesn't immediately trigger outsideSearchClose
     setTimeout(() => {
       document.addEventListener('mousedown', outsideSearchClose);
-      document.addEventListener('touchstart', outsideSearchClose);
-    }, 10);
-  } else {
-    closeSearchBar();
-    document.removeEventListener('mousedown', outsideSearchClose);
-    document.removeEventListener('touchstart', outsideSearchClose);
-    if (document._dispatchBodyLock) {
-      document.removeEventListener('touchmove', document._dispatchBodyLock);
-      document._dispatchBodyLock = null;
-    }
+    }, 50);
   }
 }
 
@@ -2792,7 +2799,6 @@ function outsideSearchClose(e) {
     dropdown.classList.remove('open');
     btn.classList.remove('active');
     document.removeEventListener('mousedown', outsideSearchClose);
-    document.removeEventListener('touchstart', outsideSearchClose);
     if (document._dispatchBodyLock) {
       document.removeEventListener('touchmove', document._dispatchBodyLock);
       document._dispatchBodyLock = null;
@@ -3153,6 +3159,12 @@ function applyMobileLayout() {
     if (st) st.style.display = 'flex';
     if (msp) msp.style.display = 'flex';
     if (dtr) dtr.style.display = 'none';
+    // measure nav height and set CSS variable for dropdown positioning
+    const nav = document.querySelector('nav');
+    if (nav) {
+      const navH = nav.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--nav-bottom', navH + 'px');
+    }
   } else {
     if (hb) hb.style.display = 'none';
     if (si) si.style.cssText = 'display:block';
@@ -3160,10 +3172,36 @@ function applyMobileLayout() {
     if (msp) msp.style.display = 'none';
     if (dtr) dtr.style.display = 'flex';
     closeMobileMenu();
+    // reset dropdown to absolute positioning on desktop
+    const dd = document.getElementById('search-dropdown');
+    if (dd) { dd.style.position = ''; dd.style.top = ''; }
   }
 }
 applyMobileLayout();
 window.addEventListener('resize', applyMobileLayout);
+
+// =========== NAV LINK BINDING ===========
+// Use touchstart (fires before :active state propagates) on touch devices,
+// fall back to click on desktop. Prevents double-highlight on mobile Safari.
+(function() {
+  let navBusy = false; // debounce rapid taps
+  const isTouchDevice = 'ontouchstart' in window;
+  const eventName = isTouchDevice ? 'touchstart' : 'click';
+
+  document.querySelectorAll('.nav-links a[data-filter]').forEach(function(link) {
+    link.addEventListener(eventName, function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (navBusy) return;
+      navBusy = true;
+      // clear all active states synchronously before adding new one
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      this.classList.add('active');
+      filterPosts(this.getAttribute('data-filter'), this);
+      setTimeout(() => { navBusy = false; }, 350);
+    }, { passive: false });
+  });
+})();
 
 setInterval(tick, 1000); tick();
 
