@@ -87,7 +87,7 @@ body::before {
 }
 .masthead-title {
   font-family: var(--display);
-  font-size: clamp(32px, 5vw, 52px);
+  font-size: 52px;
   font-weight: 900;
   letter-spacing: -1px;
   line-height: 0.9;
@@ -177,7 +177,9 @@ nav a.active { background: var(--accent); }
 }
 .nav-search-btn:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.05); }
 .nav-search-btn.active { color: var(--accent); }
-.tag-bar { display: none; } /* removed — tags now inside search dropdown */
+.nav-hamburger { display: none; }
+.sidebar-mobile-toggle { display: none; }
+.nav-mobile-menu { display: none; }
 .search-dropdown {
   position: absolute;
   top: 100%;
@@ -325,11 +327,16 @@ mark.search-hit {
 
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 0;
   border-left: 1px solid var(--rule);
   border-right: 1px solid var(--rule);
   margin-top: 0;
+}
+@media (max-width: 860px) {
+  .content-grid { grid-template-columns: 1fr; }
+  .sidebar { border-top: 1px solid var(--rule); border-left: none; }
+  .main-feed { border-right: none; }
 }
 
 /* ======= MAIN FEED ======= */
@@ -1019,12 +1026,117 @@ footer {
 .sources-collapsible.open {
   display: block;
 }
-@media (max-width: 768px) {
-  .content-grid { grid-template-columns: 1fr; }
-  .sidebar { border-top: 1px solid var(--rule); }
-  .main-feed { padding: 24px 20px; }
-  nav a { padding: 10px 14px; font-size: 10px; }
-  .masthead { padding: 28px 16px 20px; }
+@media (max-width: 520px) {
+
+  /* ---- TOP BAR ---- */
+  .top-bar { padding: 6px 12px; letter-spacing: 0.5px; font-size: 10px; }
+  .top-bar > span:first-child { display: none; }
+
+  /* ---- MASTHEAD ---- */
+  .masthead { padding: 22px 16px 16px; }
+  .masthead-title { font-size: 42px; margin-bottom: 14px; }
+  .masthead-meta { gap: 10px; font-size: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- NAV: hide links, show hamburger ---- */
+  .nav-links { display: none; }
+  .nav-hamburger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.7);
+    padding: 0 16px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    height: 100%;
+  }
+  .nav-hamburger-icon { font-size: 16px; line-height: 1; }
+  .nav-mobile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--ink);
+    border-bottom: 2px solid var(--accent);
+    z-index: 199;
+    flex-direction: column;
+  }
+  .nav-mobile-menu.open { display: flex; }
+  .nav-mobile-menu a {
+    color: var(--paper2);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-mobile-menu a:hover,
+  .nav-mobile-menu a.active { background: var(--accent); color: #fff; }
+
+  /* ---- SEARCH DROPDOWN ---- */
+  .search-dropdown { left: 0; right: 0; }
+
+  /* ---- LAYOUT GRID ---- */
+  .content-grid { grid-template-columns: 1fr; border-left: none; border-right: none; }
+  .main-feed { padding: 20px 16px; border-right: none; }
+
+  /* ---- POST CARDS ---- */
+  .post { margin-bottom: 28px; padding-bottom: 28px; }
+  .post h3 { font-size: 21px; line-height: 1.22; }
+  .post-deck { font-size: 14px; }
+  .post-confidence { margin-left: 0; }
+  .post-footer { flex-wrap: wrap; }
+
+  /* ---- SIDEBAR: collapsible ---- */
+  .sidebar {
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    border-left: none;
+  }
+  .sidebar-mobile-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    cursor: pointer;
+    border-bottom: 1px solid var(--rule-light);
+    user-select: none;
+  }
+  .sidebar-mobile-toggle-arrow { transition: transform 0.2s; }
+  .sidebar-mobile-toggle.open .sidebar-mobile-arrow { transform: rotate(180deg); }
+  .sidebar-inner {
+    display: none;
+    padding: 20px 18px 28px;
+  }
+  .sidebar-inner.open { display: block; }
+
+  /* ---- ARTICLE MODAL: full screen ---- */
+  #article-page.visible { align-items: flex-start; }
+  .article-page-inner {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    padding: 20px 18px 48px;
+    box-shadow: none;
+  }
+  .article-page-title { font-size: clamp(20px, 5.5vw, 26px); }
+  .article-page-deck { font-size: 14px; }
+  .article-page-body { font-size: 15px; }
 }
 </style>
 </head>
@@ -1081,6 +1193,17 @@ footer {
     <a href="#conflict" onclick="filterPosts('conflict',this)">Conflict</a>
     <a href="#geolocation" onclick="filterPosts('geolocation',this)">Geolocation</a>
   </div>
+  <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" style="display:none">
+    <span class="nav-hamburger-icon" id="nav-hamburger-icon">☰</span>
+    <span>MENU</span>
+  </button>
+  <div class="nav-mobile-menu" id="nav-mobile-menu">
+    <a href="#all" class="active" onclick="filterPosts('all',this);closeMobileMenu()">All</a>
+    <a href="#analysis" onclick="filterPosts('analysis',this);closeMobileMenu()">Analysis</a>
+    <a href="#strike" onclick="filterPosts('strike',this);closeMobileMenu()">Strikes</a>
+    <a href="#conflict" onclick="filterPosts('conflict',this);closeMobileMenu()">Conflict</a>
+    <a href="#geolocation" onclick="filterPosts('geolocation',this);closeMobileMenu()">Geolocation</a>
+  </div>
   <button class="nav-search-btn" id="search-toggle" onclick="toggleSearchDropdown()" title="Search & filter dispatches">
     <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.4"/>
@@ -1133,6 +1256,13 @@ footer {
     <!-- SIDEBAR -->
     <aside class="sidebar" id="about-section">
 
+      <div class="sidebar-mobile-toggle" id="sidebar-toggle" onclick="toggleSidebar()">
+        <span>About &amp; Info</span>
+        <span class="sidebar-mobile-arrow" id="sidebar-arrow">▾</span>
+      </div>
+
+      <div class="sidebar-inner" id="sidebar-inner">
+
       <div class="widget">
         <div class="widget-title">About This Blog</div>
         <p class="about-text">Independent OSINT research by <strong>Sultan Aben</strong>. Every claim is sourced — official statements, geolocated footage, primary documents, or named reporting from wire services. No anonymous aggregators, no unsourced assertions.</p>
@@ -1160,6 +1290,8 @@ footer {
           <!-- populated by JS -->
         </div>
       </div>
+
+      </div><!-- /sidebar-inner -->
 
     </aside>
   </div>
@@ -2478,7 +2610,10 @@ function toggleSearchDropdown() {
   const isOpen = dropdown.classList.toggle('open');
   btn.classList.toggle('active', isOpen);
   if (isOpen) {
-    setTimeout(() => document.getElementById('search-input').focus(), 320);
+    // only autofocus on non-touch devices to prevent mobile keyboard popup
+    if (!('ontouchstart' in window)) {
+      setTimeout(() => document.getElementById('search-input').focus(), 320);
+    }
     setTimeout(() => {
       document.addEventListener('mousedown', outsideSearchClose);
     }, 10);
@@ -2806,6 +2941,42 @@ function tick() {
   const fel = document.getElementById('footer-time');
   if (fel) fel.textContent = utc;
 }
+// =========== MOBILE NAV & SIDEBAR ===========
+function toggleMobileMenu() {
+  const menu = document.getElementById('nav-mobile-menu');
+  const icon = document.getElementById('nav-hamburger-icon');
+  const isOpen = menu.classList.toggle('open');
+  icon.textContent = isOpen ? '✕' : '☰';
+}
+function closeMobileMenu() {
+  const menu = document.getElementById('nav-mobile-menu');
+  const icon = document.getElementById('nav-hamburger-icon');
+  if (menu) { menu.classList.remove('open'); icon.textContent = '☰'; }
+}
+function toggleSidebar() {
+  const inner = document.getElementById('sidebar-inner');
+  const arrow = document.getElementById('sidebar-arrow');
+  const isOpen = inner.classList.toggle('open');
+  arrow.textContent = isOpen ? '▴' : '▾';
+}
+function applyMobileLayout() {
+  const isMobile = window.innerWidth <= 520;
+  const hb = document.getElementById('nav-hamburger');
+  const si = document.getElementById('sidebar-inner');
+  const st = document.getElementById('sidebar-toggle');
+  if (isMobile) {
+    if (hb) hb.style.display = 'flex';
+    if (st) st.style.display = 'flex';
+  } else {
+    if (hb) hb.style.display = 'none';
+    if (si) si.style.cssText = 'display:block';
+    if (st) st.style.display = 'none';
+    closeMobileMenu();
+  }
+}
+applyMobileLayout();
+window.addEventListener('resize', applyMobileLayout);
+
 setInterval(tick, 1000); tick();
 
 // =========== TOGGLE SOURCES ===========
