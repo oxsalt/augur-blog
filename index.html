@@ -181,6 +181,8 @@ nav a.active { background: var(--accent); }
 .nav-hamburger { display: none; }
 .sidebar-mobile-toggle { display: none; }
 .nav-mobile-menu { display: none; }
+.geo-short { display: none; }
+.geo-full { display: inline; }
 .search-dropdown {
   position: absolute;
   top: 100%;
@@ -1029,8 +1031,8 @@ footer {
 }
 @media (max-width: 520px) {
 
-  /* ---- TOP BAR: same size as desktop ---- */
-  .top-bar { padding: 6px 16px; justify-content: center; }
+  /* ---- TOP BAR ---- */
+  .top-bar { padding: 5px 16px; font-size: 9px; justify-content: center; }
   .top-bar > span:first-child { display: none; }
   .top-bar-center { display: none; }
 
@@ -1039,7 +1041,6 @@ footer {
   .masthead-rule { margin-bottom: 22px; }
   .masthead-label { margin-bottom: 20px; }
   .masthead-title { font-size: 56px; margin-bottom: 28px; }
-  /* two-line layout: top row = Live Updates · All Sources, bottom row = dispatch count */
   .masthead-meta {
     display: flex;
     flex-direction: column;
@@ -1052,15 +1053,8 @@ footer {
     margin-bottom: 0;
   }
   .meta-desktop { display: none !important; }
-  .masthead-meta-row1 {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .masthead-meta-row2 {
-    opacity: 0.55;
-    letter-spacing: 1.5px;
-  }
+  .masthead-meta-row1 { display: flex; align-items: center; gap: 16px; }
+  .masthead-meta-row2 { display: flex; justify-content: center; opacity: 0.55; letter-spacing: 1.5px; }
 
   /* ---- NAV: keep all five buttons, smaller ---- */
   .nav-links { display: flex; flex: 1; }
@@ -1075,14 +1069,17 @@ footer {
     text-align: center;
   }
   nav a:first-child { border-left: 1px solid rgba(255,255,255,0.08); }
+  /* swap Geolocation label to short form on mobile */
+  .geo-full { display: none; }
+  .geo-short { display: inline; }
   /* search icon: smaller, full white */
   .nav-search-btn { padding: 0 10px; margin-right: 4px; color: rgba(255,255,255,0.85); }
   .nav-search-btn svg { width: 16px; height: 10px; }
 
-  /* ---- SEARCH DROPDOWN: tall mobile panel ---- */
+  /* ---- SEARCH DROPDOWN: fills remaining screen, no bleed-through ---- */
   .search-dropdown.open {
-    height: auto;
-    max-height: 90vh;
+    height: calc(100vh - 44px);
+    max-height: calc(100vh - 44px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1310,7 +1307,7 @@ footer {
     <a href="#" onclick="filterPosts('analysis',this);return false;">Analysis</a>
     <a href="#" onclick="filterPosts('strike',this);return false;">Strikes</a>
     <a href="#" onclick="filterPosts('conflict',this);return false;">Conflict</a>
-    <a href="#" onclick="filterPosts('geolocation',this);return false;">Geo</a>
+    <a href="#" onclick="filterPosts('geolocation',this);return false;"><span class="geo-full">Geolocation</span><span class="geo-short">Geo</span></a>
   </div>
   <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" style="display:none">
     <span class="nav-hamburger-icon" id="nav-hamburger-icon">☰</span>
@@ -3141,7 +3138,7 @@ function filterTagMobile(tag, el) {
   setTimeout(() => {
     filterTag(tag, null);
     closeSearchBar();
-  }, 500);
+  }, 300);
 }
 
 function applyMobileLayout() {
