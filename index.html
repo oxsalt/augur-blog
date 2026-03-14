@@ -2974,12 +2974,16 @@ function clearSearch() {
 
 // =========== SLUGIFY ===========
 function slugify(text) {
-  return text.toLowerCase()
+  const slug = text.toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim()
-    .substring(0, 80);
+    .trim();
+  if (slug.length <= 70) return slug;
+  // Cut at last hyphen before 70 chars to avoid mid-word truncation
+  const cut = slug.substring(0, 70);
+  const lastHyphen = cut.lastIndexOf('-');
+  return lastHyphen > 30 ? cut.substring(0, lastHyphen) : cut;
 }
 
 // =========== COPY POST LINK ===========
@@ -3001,7 +3005,15 @@ function openArticlePage(id) {
 
   // On mobile, navigate to a full page instead of modal
   if (window.innerWidth <= 520) {
-    history.pushState({ postId: id }, '', '?post=' + id);
+    const currentParams = new URLSearchParams(window.location.search);
+    const currentPost = parseInt(currentParams.get('post'), 10);
+    // Always push a clean feed state first if we're coming from the feed,
+    // so the back button always works correctly
+    if (currentPost !== id) {
+      history.pushState({ postId: id }, '', '?post=' + id);
+    } else {
+      history.replaceState({ postId: id }, '', '?post=' + id);
+    }
     renderMobileArticlePage(id);
     return;
   }
@@ -3175,9 +3187,12 @@ function renderMobileArticlePage(id) {
     </footer>
   `;
   page.style.display = 'block';
+  // iOS Safari: save scroll position before fixing body
+  const scrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
   document.body.style.position = 'fixed';
   document.body.style.width = '100%';
+  document.body.style.top = '-' + scrollY + 'px';
   page.scrollTop = 0;
   document.getElementById('article-page').classList.remove('visible');
 
@@ -3195,9 +3210,12 @@ function closeMobileArticlePage() {
   const page = document.getElementById('mobile-article-page');
   page.style.display = 'none';
   page.innerHTML = '';
+  const scrollTop = parseInt(document.body.style.top || '0') * -1;
   document.body.style.overflow = '';
   document.body.style.position = '';
   document.body.style.width = '';
+  document.body.style.top = '';
+  window.scrollTo(0, scrollTop);
   history.pushState(null, '', window.location.pathname);
 }
 
@@ -3214,8 +3232,20 @@ window.addEventListener('popstate', (e) => {
   if (mobilePage && mobilePage.style.display === 'block') {
     mobilePage.style.display = 'none';
     mobilePage.innerHTML = '';
+    const scrollTop2 = parseInt(document.body.style.top || '0') * -1;
     document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+    window.scrollTo(0, scrollTop2);
     return;
+  }
+  // If navigating to a ?post= URL via history, render that article
+  if (!e.state && window.location.search.includes('?post=')) {
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get('post'), 10);
+    const p = posts.find(x => x.id === id);
+    if (p && window.innerWidth <= 520) { renderMobileArticlePage(id); return; }
   }
   if (e.state && e.state.postId) {
     openArticlePage(e.state.postId);
@@ -3246,6 +3276,24 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('load', () => {
+  // Check ?post=ID query string first (used by mobile article pages)
+  const params = new URLSearchParams(window.location.search);
+  const postParam = params.get('post');
+  if (postParam) {
+    const id = parseInt(postParam, 10);
+    const matched = posts.find(p => p.id === id);
+    if (matched) {
+      setTimeout(() => {
+        if (window.innerWidth <= 520) {
+          renderMobileArticlePage(matched.id);
+        } else {
+          openArticlePage(matched.id);
+        }
+      }, 150);
+    }
+    return;
+  }
+  // Fall back to hash URL (used by desktop modal)
   const hash = window.location.hash.replace('#', '');
   if (hash) {
     const matched = posts.find(p => slugify(p.title) === hash);
