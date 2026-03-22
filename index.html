@@ -3384,7 +3384,11 @@ The question Trump's post raises is not really whether the US is close to its st
   date: '20 Mar 2026, 22:18 UTC',
   title: 'Iraqi militia drone swarm strikes US Victoria Base in Baghdad again. Footage confirmed.',
   deck: 'Multiple Telegram sources, including footage geolocated to the Victoria Base complex south of Baghdad, show a fresh drone swarm attack on the US installation tonight. The Kurdistan Regional Government’s deputy chief of staff has posted confirming the strike.',
-  body: `Multiple Telegram sources have published footage tonight of a drone swarm attack on Victoria Base, the US military installation at Baghdad International Airport. The footage shows incoming drones over the base perimeter and subsequent fires and detonations within the compound. Aziz Ahmad, Deputy Chief of Staff to Kurdistan Regional Government Prime Minister Masrour Barzani, posted on social media confirming the strike, citing the footage. Iraqi militia groups aligned with Iran have repeatedly targeted the base throughout the war. This is the latest in a sustained campaign by the Islamic Resistance in Iraq — the umbrella coalition of Iran-backed Shia militia factions — against US military infrastructure in the country. No casualty figures have been reported at time of posting.`,
+  body: `Multiple Telegram sources have published footage tonight of a drone swarm attack on Victoria Base, the US military installation at Baghdad International Airport. The footage shows incoming drones over the base perimeter and subsequent fires and detonations within the compound.
+
+<div data-strike-map="victoria-75"></div>
+
+Aziz Ahmad, Deputy Chief of Staff to Kurdistan Regional Government Prime Minister Masrour Barzani, posted on social media confirming the strike, citing the footage. Iraqi militia groups aligned with Iran have repeatedly targeted the base throughout the war. This is the latest in a sustained campaign by the Islamic Resistance in Iraq — the umbrella coalition of Iran-backed Shia militia factions — against US military infrastructure in the country. No casualty figures have been reported at time of posting.`,
   note: '',
   sources: [
     { platform: 'telegram', handle: 'Alibk3 — Footage of drone swarm over Victoria Base, Baghdad; detonations visible inside compound', quote: '', timestamp: '20 Mar 2026', url: 'https://t.me/Alibk3/11609' },
@@ -3914,7 +3918,7 @@ function openArticlePage(id) {
   setTimeout(() => window.startModalLava && window.startModalLava(), 280);
 
   // Init map after modal is visible — only init whichever container is actually shown
-  if (p.body.includes('data-strike-map') && (window._initAfipskyMap || window._initFujairahMap || window._initAnzaliMap || window._initRasLaffanMap || window._initRiyadhMap || window._initHaifaMap)) {
+  if (p.body.includes('data-strike-map') && (window._initAfipskyMap || window._initFujairahMap || window._initAnzaliMap || window._initRasLaffanMap || window._initRiyadhMap || window._initHaifaMap || window._initDiegoGarciaMap)) {
     setTimeout(() => {
       const isFujairah = p.id === 67;
       const isNovo = p.id === 68;
@@ -3940,7 +3944,9 @@ function openArticlePage(id) {
       const isAnzali = p.id === 83;
       const isHaifa = p.id === 85;
       const isRasLaffan = p.id === 82;
-      const initFn = isFujairah ? window._initFujairahMap : isNovo ? window._initNovorossiyskMap : isAdikong ? window._initAdikongMap : isTehran ? window._initTehranMap : isSalalah ? window._initSalalahMap : isMosul ? window._initMosulMap : isMehrabad ? window._initMehrabadMap : isAkrotiri ? window._initAkrotiriMap : isCampDeLaPaix ? window._initCampDeLaPaixMap : isIncirlik ? window._initIncirlikMap : isErbil ? window._initErbilMap : isNakhchivan ? window._initNakhchivanMap : isBeirut ? window._initBeirutMap : isDubai ? window._initDubaiMap : isBahrain ? window._initBahrainMap : isDovzhansk ? window._initDovzhanskMap : isVictoria ? window._initVictoriaMap : isKhiam ? window._initKhiamMap : isKabul ? window._initKabulMap : isAsaluyeh ? window._initAsaluyehMap : isRiyadh ? window._initRiyadhMap : isAnzali ? window._initAnzaliMap : isRasLaffan ? window._initRasLaffanMap : window._initAfipskyMap;
+      const isDiegoGarcia = p.id === 90;
+      const isVictoria89 = p.id === 89;
+      const initFn = isFujairah ? window._initFujairahMap : isNovo ? window._initNovorossiyskMap : isAdikong ? window._initAdikongMap : isTehran ? window._initTehranMap : isSalalah ? window._initSalalahMap : isMosul ? window._initMosulMap : isMehrabad ? window._initMehrabadMap : isAkrotiri ? window._initAkrotiriMap : isCampDeLaPaix ? window._initCampDeLaPaixMap : isIncirlik ? window._initIncirlikMap : isErbil ? window._initErbilMap : isNakhchivan ? window._initNakhchivanMap : isBeirut ? window._initBeirutMap : isDubai ? window._initDubaiMap : isBahrain ? window._initBahrainMap : isDovzhansk ? window._initDovzhanskMap : (isVictoria || isVictoria89) ? window._initVictoriaMap : isKhiam ? window._initKhiamMap : isKabul ? window._initKabulMap : isAsaluyeh ? window._initAsaluyehMap : isRiyadh ? window._initRiyadhMap : isAnzali ? window._initAnzaliMap : isRasLaffan ? window._initRasLaffanMap : isHaifa ? window._initHaifaMap : isDiegoGarcia ? window._initDiegoGarciaMap : window._initAfipskyMap;
       if (!initFn) return;
       const float = document.getElementById('ap-map-float');
       const afterDeck = document.getElementById('ap-map-after-deck');
